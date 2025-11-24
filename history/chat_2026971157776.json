@@ -1,0 +1,26 @@
+[
+  {
+    "role": "user",
+    "content": "hi"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "hjjj"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "what is the capital of india"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  }
+]

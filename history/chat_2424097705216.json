@@ -1,0 +1,42 @@
+[
+  {
+    "role": "user",
+    "content": "hi"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "i like pizza with what can you tell ?"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "i like pizza with tomato"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "what kind of pizza i like with"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "i am asking my choice"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  }
+]

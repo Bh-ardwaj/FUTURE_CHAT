@@ -1,0 +1,26 @@
+[
+  {
+    "role": "user",
+    "content": "hi"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "i like piiza not pasta"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "do you remmeber what i like ?"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  }
+]

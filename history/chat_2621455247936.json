@@ -1,0 +1,18 @@
+[
+  {
+    "role": "user",
+    "content": "hi'"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "hi"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  }
+]

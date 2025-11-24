@@ -1,0 +1,18 @@
+[
+  {
+    "role": "user",
+    "content": "HI"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "BAESBFHABSFBA ABSJFBASBDJFBAJSBFBASF"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  }
+]
