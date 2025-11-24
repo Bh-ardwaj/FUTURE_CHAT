@@ -1,0 +1,66 @@
+[
+  {
+    "role": "user",
+    "content": "IS OLLAMA IS AN MODEL"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "IS OLLAMA IS AN MODEL"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "SO WHAT IS TINYDOLPHIN THEN"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "EXPLAIN ABOUT IT LIKE MODEL IS OLLAMA AND TINYDOLPHINE IS WHAT THEN"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "IN AI"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "HI"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "WHAT IS THE CAPITAL OF FRANCCE"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  },
+  {
+    "role": "user",
+    "content": "ARCHITECTURE OF YOURSELF"
+  },
+  {
+    "role": "assistant",
+    "content": "(reply saved on client)"
+  }
+]
