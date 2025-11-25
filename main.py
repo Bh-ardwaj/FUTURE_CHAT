@@ -257,21 +257,20 @@
 #         except Exception:
 #             pass
 # backend/main.py
-import json
-import asyncio
-from pathlib import Path
-
+# -------------------- main.py (FINAL FIXED VERSION) --------------------
+import json, asyncio
 from fastapi import FastAPI, WebSocket, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pathlib import Path
 
 from ollama_client import stream_ollama
 from llama_client import stream_llamacpp
 from tts import synthesize_text_to_file
 
-# 🔁 Long-term memory
-from memory import save_memory, retrieve_memory
+from memory import save_memory, retrieve_memory  # fixed memory system
 
+# -------------------- PATHS --------------------
 APP_DIR = Path(__file__).parent
 UPLOAD_DIR = APP_DIR / "uploads"
 HIST_DIR = APP_DIR / "history"
@@ -279,6 +278,7 @@ HIST_DIR = APP_DIR / "history"
 UPLOAD_DIR.mkdir(exist_ok=True)
 HIST_DIR.mkdir(exist_ok=True)
 
+# -------------------- FASTAPI APP --------------------
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -287,46 +287,49 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# You can still pick backends from the frontend
+# -------------------- MODEL BACKENDS --------------------
 MODEL_BACKENDS = {
     "ollama": {"type": "ollama"},
     "llama_cpp": {
         "type": "llama_cpp",
-        "cmd": ["./main", "-m", "models/ggml-model.bin", "--threads", "4"],
-    },
+        "cmd": ["./main", "-m", "models/ggml-model.bin", "--threads", "4"]
+    }
 }
 
 
+# -------------------- CHAT BACKUP --------------------
 def save_chat_backup(chat_id: str, messages: list):
-    (HIST_DIR / f"{chat_id}.json").write_text(json.dumps(messages, indent=2))
+    (HIST_DIR / f"{chat_id}.json").write_text(
+        json.dumps(messages, indent=2)
+    )
 
 
 # -------------------- FILE UPLOAD --------------------
-@app.post("/upload")
+@app.post('/upload')
 async def upload_file(file: UploadFile = File(...)):
     dest = UPLOAD_DIR / file.filename
-    with open(dest, "wb") as f:
+    with open(dest, 'wb') as f:
         f.write(await file.read())
     return {"status": "ok", "filename": file.filename}
 
 
-@app.get("/file/{filename}")
+@app.get('/file/{filename}')
 async def get_file(filename: str):
     f = UPLOAD_DIR / filename
     if not f.exists():
-        raise HTTPException(404, "file not found")
+        raise HTTPException(404, "File not found")
     return FileResponse(str(f))
 
 
 # -------------------- TTS --------------------
-@app.get("/tts")
+@app.get('/tts')
 def tts_endpoint(text: str):
     wav = synthesize_text_to_file(text)
     return FileResponse(wav, media_type="audio/wav")
 
 
 # -------------------- WEBSOCKET CHAT --------------------
-@app.websocket("/chat")
+@app.websocket('/chat')
 async def websocket_chat(ws: WebSocket):
 
     await ws.accept()
@@ -335,55 +338,61 @@ async def websocket_chat(ws: WebSocket):
 
     try:
         while True:
-            # Receive message from frontend
+
             data = await ws.receive_text()
             req = json.loads(data)
 
             if req.get("type") != "chat":
-                await ws.send_text(
-                    json.dumps(
-                        {"type": "error", "error": "unsupported message type"}
-                    )
-                )
+                await ws.send_text(json.dumps({
+                    "type": "error",
+                    "error": "Unsupported message type"
+                }))
                 continue
 
             user_msg = req.get("message", "")
             backend_key = req.get("model", "ollama")
-            # Example: "tinyllama", "tinydolphin", etc. from frontend
-            model_name = req.get("model_name", "tinyllama")
+            model_name = req.get("model_name", "tinydolphin")
 
             # -------------------- MEMORY RETRIEVAL --------------------
-            recalled_memories = retrieve_memory(user_msg)  # list[str]
+            memories = retrieve_memory(user_msg)
+            memory_text = "\n".join(memories) if memories else "No relevant memories."
 
-            mem_block = (
-                "\n".join(recalled_memories) if recalled_memories else "None yet."
-            )
+            # -------------------- ENHANCED PROMPT --------------------
+            enhanced_prompt = f"""
+You are **FutureChat**, a friendly intelligent assistant using the TinyDolphin model.
 
-            # Build enhanced prompt for the local model
-            enhanced_prompt = (
-                "You are FutureChat, a helpful AI assistant with long-term memory.\n"
-                "Use the past memories only if they are relevant. Stay consistent with what the user has told you earlier.\n\n"
-                "🔮 Relevant memories from past chats:\n"
-                f"{mem_block}\n\n"
-                "💬 Current user message:\n"
-                f"{user_msg}\n"
-            )
+Rules:
+- DO NOT rewrite the user's message.
+- DO NOT explain the memory.
+- DO NOT roleplay as both User and AI.
+- USE the memory only if relevant.
+- Reply naturally like ChatGPT.
 
-            # Save normal chat history (backup on disk)
+Memories:
+{memory_text}
+
+User message:
+{user_msg}
+
+Your response:
+"""
+
+            # -------------------- SAVE MEMORY --------------------
+            save_memory(user_msg, None)
+
+            # -------------------- SAVE BACKUP HISTORY --------------------
             history.append({"role": "user", "content": user_msg})
             save_chat_backup(chat_id, history)
 
-            # Notify frontend that streaming is starting
             await ws.send_text(json.dumps({"type": "start"}))
 
             backend_cfg = MODEL_BACKENDS.get(backend_key, {"type": "ollama"})
 
             # -------------------- OLLAMA BACKEND --------------------
             if backend_cfg["type"] == "ollama":
-                full_reply = ""
 
                 async for line in stream_ollama(model_name, enhanced_prompt):
-                    # parse each token / line from Ollama
+
                     try:
                         parsed = json.loads(line)
                         if "response" in parsed:
@@ -391,51 +400,44 @@ async def websocket_chat(ws: WebSocket):
                         elif "token" in parsed:
                             chunk = parsed["token"]
                         else:
-                            chunk = str(parsed)
-                    except Exception:
+                            chunk = line
+                    except:
                         chunk = line
 
-                    full_reply += chunk
-                    await ws.send_text(
-                        json.dumps({"type": "chunk", "content": chunk})
-                    )
+                    await ws.send_text(json.dumps({
+                        "type": "chunk",
+                        "content": chunk
+                    }))
 
                 await ws.send_text(json.dumps({"type": "end"}))
 
-                # save assistant reply into long-term memory + backup
-                save_memory(chat_id, user_msg, full_reply)
-                history.append(
-                    {"role": "assistant", "content": "(reply saved on client)"}
-                )
+                history.append({"role": "assistant", "content": "(saved client-side)"})
                 save_chat_backup(chat_id, history)
 
             # -------------------- LLAMA-CPP BACKEND --------------------
             elif backend_cfg["type"] == "llama_cpp":
+
                 cmd = backend_cfg["cmd"]
-                full_reply = ""
 
                 async for chunk in stream_llamacpp(cmd, enhanced_prompt):
-                    full_reply += chunk
-                    await ws.send_text(
-                        json.dumps({"type": "chunk", "content": chunk})
-                    )
+                    await ws.send_text(json.dumps({
+                        "type": "chunk",
+                        "content": chunk
+                    }))
 
                 await ws.send_text(json.dumps({"type": "end"}))
 
-                save_memory(chat_id, user_msg, full_reply)
-                history.append(
-                    {"role": "assistant", "content": "(reply saved on client)"}
-                )
+                history.append({"role": "assistant", "content": "(saved client-side)"})
                 save_chat_backup(chat_id, history)
 
             else:
-                await ws.send_text(
-                    json.dumps({"type": "error", "error": "unknown backend type"})
-                )
+                await ws.send_text(json.dumps({
+                    "type": "error",
+                    "error": "Unknown backend type"
+                }))
 
-    except Exception as e:
-        print(f"[websocket_chat] Error: {e}")
+    except Exception:
         try:
             await ws.close()
-        except Exception:
+        except:
             pass
